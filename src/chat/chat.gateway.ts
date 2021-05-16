@@ -6,8 +6,9 @@ import {
 
 @WebSocketGateway()
 export class ChatGateway {
-  @SubscribeMessage('chats')
+  @SubscribeMessage('message')
   handleChatEvent(@MessageBody() data: string): string {
+    console.log(data);
     return data + 'Hello';
   }
 }
