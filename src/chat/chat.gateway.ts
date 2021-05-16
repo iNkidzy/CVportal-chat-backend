@@ -42,7 +42,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('All Nicknames:', this.chatService.getAllClients());
       this.server.emit('clients', this.chatService.getAllClients());
     } catch (e) {
-      client.error(e);
+      client.error(e.message);
     }
   }
 
