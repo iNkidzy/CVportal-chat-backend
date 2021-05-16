@@ -30,15 +30,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     this.clients.set(client.id, nickname);
     console.log('All Nicknames:', this.clients);
+    this.server.emit('clients', Array.from(this.clients.values()));
   }
 
   handleConnection(client: Socket, ...args: any[]): any {
     console.log('Client Connect', client.id);
     client.emit('allMessages', this.allMessages);
+    this.server.emit('clients', Array.from(this.clients.values()));
   }
 
   handleDisconnect(client: any): any {
     this.clients.delete(client.id);
     console.log('Client Disconnect', this.clients);
+    this.server.emit('clients', Array.from(this.clients.values()));
   }
 }
