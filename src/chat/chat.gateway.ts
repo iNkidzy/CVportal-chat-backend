@@ -12,12 +12,18 @@ import { Socket } from 'socket.io';
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   allMessages: string[] = [];
   @WebSocketServer() server;
+
   @SubscribeMessage('message')
   handleChatEvent(@MessageBody() message: string): string {
     console.log(message);
     this.allMessages.push(message);
     this.server.emit('newMessage', message);
     return message + 'Hello';
+  }
+
+  @SubscribeMessage('nickname')
+  handleNicknameEvent(@MessageBody() nickname: string): void {
+    console.log(nickname);
   }
 
   handleConnection(client: Socket, ...args: any[]): any {
