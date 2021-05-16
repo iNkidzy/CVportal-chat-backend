@@ -6,19 +6,23 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  allMessages: string[] = [];
   @WebSocketServer() server;
   @SubscribeMessage('message')
-  handleChatEvent(@MessageBody() data: string): string {
-    console.log(data);
-    this.server.emit('messages', data);
-    return data + 'Hello';
+  handleChatEvent(@MessageBody() message: string): string {
+    console.log(message);
+    this.allMessages.push(message);
+    this.server.emit('newMessage', message);
+    return message + 'Hello';
   }
 
-  handleConnection(client: any, ...args: any[]): any {
+  handleConnection(client: Socket, ...args: any[]): any {
     console.log('Client Connect', client.id);
+    client.emit('allMessages', this.allMessages);
   }
 
   handleDisconnect(client: any): any {
