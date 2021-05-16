@@ -5,22 +5,21 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer
-} from "@nestjs/websockets";
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { ChatService } from './shared/chat.service';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  allMessages: string[] = [];
-  clients: Map<string, string> = new Map<string, string>();
+  constructor(private chatService: ChatService) {}
   @WebSocketServer() server;
 
   @SubscribeMessage('message')
-  handleChatEvent(@MessageBody() message: string): string {
+  handleChatEvent(@MessageBody() message: string): void {
     console.log(message);
-    this.allMessages.push(message);
+    this.chatService.addMessage(message);
     this.server.emit('newMessage', message);
-    return message + 'Hello';
   }
 
   @SubscribeMessage('nickname')
@@ -28,20 +27,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() nickname: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    this.clients.set(client.id, nickname);
-    console.log('All Nicknames:', this.clients);
-    this.server.emit('clients', Array.from(this.clients.values()));
+    this.chatService.addClient(client.id, nickname);
+    console.log('All Nicknames:', this.chatService.getAllClients());
+    this.server.emit('clients', this.chatService.getAllClients());
   }
 
   handleConnection(client: Socket, ...args: any[]): any {
     console.log('Client Connect', client.id);
-    client.emit('allMessages', this.allMessages);
-    this.server.emit('clients', Array.from(this.clients.values()));
+    client.emit('allMessages', this.chatService.getAllMessages());
+    this.server.emit('clients', this.chatService.getAllClients());
   }
 
   handleDisconnect(client: any): any {
-    this.clients.delete(client.id);
-    console.log('Client Disconnect', this.clients);
-    this.server.emit('clients', Array.from(this.clients.values()));
+    this.chatService.deleteClient(client.id);
+    this.server.emit('clients', this.chatService.getAllClients());
   }
 }
