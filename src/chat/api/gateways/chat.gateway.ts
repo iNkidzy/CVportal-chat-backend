@@ -8,8 +8,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { ChatService } from './shared/chat.service';
-import { WelcomeDto } from './shared/welcome.dto';
+import { ChatService } from '../../core/services/chat.service';
+import { WelcomeDto } from '../dtos/welcome.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {

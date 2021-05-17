@@ -1,5 +1,5 @@
-import { ChatClient } from './chat-client.model';
-import { ChatMessage } from './chat-message.model';
+import { ChatClient } from '../../core/models/chat-client.model';
+import { ChatMessage } from '../../core/models/chat-message.model';
 
 export interface WelcomeDto {
   // DTO = Data transfer objects, it is
