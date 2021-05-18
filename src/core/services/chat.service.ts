@@ -20,22 +20,26 @@ export class ChatService implements IChatService {
     return chatMessage;
   }
 
-  async addClient(id: string, nickname: string): Promise<ChatClient> {
-    // finding the one and only in db
-    const clientDb = await this.clientRepository.findOne({
-      nickname: nickname,
-    });
-    if (clientDb) {
-      let client = this.clientRepository.create();
-      client.nickname = nickname;
-      client = await this.clientRepository.save(client);
-      return { id: '' + client.id, nickname: client.nickname };
+  async addClient(chatClient: ChatClient): Promise<ChatClient> {
+    // finds the chatclient id in the db and returns it + if nickname found in db throw exception
+    const chatClientFindById = await this.clientRepository.findOne({id: chatClient.id});
+    if ( chatClientFindById){
+      return JSON.parse(JSON.stringify(chatClientFindById));
     }
-    if (clientDb.id === id) {
-      return { id: clientDb.id, nickname: clientDb.nickname };
-    } else {
+    const chatClientFindByNickname = await this.clientRepository.findOne({nickname: chatClient.nickname});
+    if (chatClientFindByNickname) {
       throw new Error('Error: Nickname already exists! Pick a new one ;)');
-    }
+    } //finally find client and return him
+    let client = this.clientRepository.create();
+    client.nickname = chatClient.nickname;
+    client = await this.clientRepository.save(client);
+    const newChatClient = JSON.parse(JSON.stringify(client));
+    this.clients.push(newChatClient);
+    return newChatClient;
+    // finding the one and only in db
+   /* const clientDb = await this.clientRepository.findOne({
+      nickname: nickname,
+    }); */
   }
 
   async getAllClients(): Promise<ChatClient[]> {
