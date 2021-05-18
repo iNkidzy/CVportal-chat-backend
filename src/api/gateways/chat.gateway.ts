@@ -50,7 +50,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const chatClient = await this.chatService.addClient(client.id, nickname);
       const chatClients = await this.chatService.getAllClients();
-      console.log('chatClient', chatClient);
       const welcome: WelcomeDto = {
         clients: chatClients,
         messages: this.chatService.getAllMessages(),
@@ -64,7 +63,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(client: Socket, ...args: any[]): Promise<any> {
-    console.log('Client Connect', client.id);
     client.emit('allMessages', this.chatService.getAllMessages());
     this.server.emit('clients', await this.chatService.getAllClients());
   }
