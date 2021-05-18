@@ -49,27 +49,28 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     try {
       const chatClient = await this.chatService.addClient(client.id, nickname);
+      const chatClients = await this.chatService.getAllClients();
       console.log('chatClient', chatClient);
       const welcome: WelcomeDto = {
-        clients: this.chatService.getAllClients(),
+        clients: chatClients,
         messages: this.chatService.getAllMessages(),
         client: chatClient,
       };
       client.emit('welcome', welcome);
-      this.server.emit('clients', this.chatService.getAllClients());
+      this.server.emit('clients', chatClients);
     } catch (e) {
       client.error(e.message);
     }
   }
 
-  handleConnection(client: Socket, ...args: any[]): any {
+  async handleConnection(client: Socket, ...args: any[]): Promise<any> {
     console.log('Client Connect', client.id);
     client.emit('allMessages', this.chatService.getAllMessages());
-    this.server.emit('clients', this.chatService.getAllClients());
+    this.server.emit('clients', await this.chatService.getAllClients());
   }
 
-  handleDisconnect(client: any): any {
-    this.chatService.deleteClient(client.id);
-    this.server.emit('clients', this.chatService.getAllClients());
+  async handleDisconnect(client: any): Promise<any> {
+    await this.chatService.deleteClient(client.id);
+    this.server.emit('clients', await this.chatService.getAllClients());
   }
 }

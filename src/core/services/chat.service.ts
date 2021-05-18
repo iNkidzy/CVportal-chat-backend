@@ -39,8 +39,11 @@ export class ChatService implements IChatService {
     }
   }
 
-  getAllClients(): ChatClient[] {
-    return this.clients;
+  async getAllClients(): Promise<ChatClient[]> {
+    const clients = await this.clientRepository.find();
+    // takes the list of clients converts into jsonstring and then parse to convert back to object
+    const chatClients: ChatClient[] = JSON.parse(JSON.stringify(clients));
+    return chatClients;
   }
 
   getAllMessages(): ChatMessage[] {
@@ -48,7 +51,8 @@ export class ChatService implements IChatService {
   }
 
   async deleteClient(id: string): Promise<void> {
-    this.clients = this.clients.filter((c) => c.id !== id);
+    await this.clientRepository.delete({ id: id });
+    // this.clients = this.clients.filter((c) => c.id !== id);
   }
 
   updateTyping(typing: boolean, id: string): ChatClient {
