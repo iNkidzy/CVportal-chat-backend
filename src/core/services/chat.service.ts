@@ -33,6 +33,7 @@ export class ChatService implements IChatService {
     //chatClient = { id: id, nickname: nickname };
     //this.clients.push(chatClient);
     let client = this.clientRepository.create();
+    client.id = id;
     client.nickname = nickname;
     client = await this.clientRepository.save(client);
     return { id: '' + client.id, nickname: client.nickname };
