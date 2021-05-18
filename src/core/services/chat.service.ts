@@ -2,12 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { ChatClient } from '../models/chat-client.model';
 import { ChatMessage } from '../models/chat-message.model';
 import { IChatService } from '../primary-ports/chat.service.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Client } from '../../infrastructure/client.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ChatService implements IChatService {
   allMessages: ChatMessage[] = [];
   clients: ChatClient[] = [];
-
+  constructor(
+    @InjectRepository(Client) private clientRepository: Repository<Client>,
+  ) {}
   addMessage(message: string, clientId: string): ChatMessage {
     const client = this.clients.find((c) => c.id === clientId);
     const chatMessage: ChatMessage = { message: message, sender: client };
@@ -25,8 +30,11 @@ export class ChatService implements IChatService {
     if (this.clients.find((c) => c.nickname === nickname)) {
       throw new Error('Error: Nickname already exists! Pick a new one ;)');
     }
-    chatClient = { id: id, nickname: nickname };
-    this.clients.push(chatClient);
+    //chatClient = { id: id, nickname: nickname };
+    //this.clients.push(chatClient);
+    const client = this.clientRepository.create();
+    client.nickname = nickname;
+    this.clientRepository.save(client);
     return chatClient;
   }
 
