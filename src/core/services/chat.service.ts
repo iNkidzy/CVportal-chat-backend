@@ -21,22 +21,22 @@ export class ChatService implements IChatService {
   }
 
   async addClient(id: string, nickname: string): Promise<ChatClient> {
-    let chatClient = this.clients.find(
-      (c) => c.nickname === nickname && c.id === id,
-    );
-    if (chatClient) {
-      return chatClient;
+    // finding the one and only in db
+    const clientDb = await this.clientRepository.findOne({
+      nickname: nickname,
+    });
+    if (clientDb) {
+      let client = this.clientRepository.create();
+      client.id = id;
+      client.nickname = nickname;
+      client = await this.clientRepository.save(client);
+      return { id: '' + client.id, nickname: client.nickname };
     }
-    if (this.clients.find((c) => c.nickname === nickname)) {
+    if (clientDb.id === id) {
+      return { id: clientDb.id, nickname: clientDb.nickname };
+    } else {
       throw new Error('Error: Nickname already exists! Pick a new one ;)');
     }
-    //chatClient = { id: id, nickname: nickname };
-    //this.clients.push(chatClient);
-    let client = this.clientRepository.create();
-    client.id = id;
-    client.nickname = nickname;
-    client = await this.clientRepository.save(client);
-    return { id: '' + client.id, nickname: client.nickname };
   }
 
   getAllClients(): ChatClient[] {
@@ -47,7 +47,7 @@ export class ChatService implements IChatService {
     return this.allMessages;
   }
 
-  deleteClient(id: string): void {
+  async deleteClient(id: string): Promise<void> {
     this.clients = this.clients.filter((c) => c.id !== id);
   }
 
