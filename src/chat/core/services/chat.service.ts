@@ -23,7 +23,7 @@ export class ChatService implements IChatService {
       return chatClient;
     }
     if (this.clients.find((c) => c.nickname === nickname)) {
-      throw new Error('Nickname already exists!Pick a new one ;)');
+      throw new Error('Error: Nickname already exists! Pick a new one ;)');
     }
     chatClient = { id: id, nickname: nickname };
     this.clients.push(chatClient);

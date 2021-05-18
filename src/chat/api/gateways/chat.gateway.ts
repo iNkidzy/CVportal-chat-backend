@@ -8,7 +8,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { ChatService } from '../../core/services/chat.service';
 import { WelcomeDto } from '../dtos/welcome.dto';
 import { Inject } from '@nestjs/common';
 import {
@@ -28,7 +27,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    console.log(message);
     const chatMessage = this.chatService.addMessage(message, client.id);
     this.server.emit('newMessage', chatMessage);
   }
@@ -38,7 +36,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() typing: boolean,
     @ConnectedSocket() client: Socket,
   ): void {
-    console.log('typing', typing);
     const chatClient = this.chatService.updateTyping(typing, client.id);
     if (chatClient) {
       this.server.emit('clientTyping', chatClient);
