@@ -13,9 +13,9 @@ export class ChatService implements IChatService {
   constructor(
     @InjectRepository(Client) private clientRepository: Repository<Client>,
   ) {}
-  addMessage(message: string, clientId: string): ChatMessage {
-    const client = this.clients.find((c) => c.id === clientId);
-    const chatMessage: ChatMessage = { message: message, sender: client };
+  async addMessage(message: string, clientId: string): Promise<ChatMessage> {
+    const clientDb = await this.clientRepository.findOne({id: clientId});
+    const chatMessage: ChatMessage = { message: message, sender: clientDb };
     this.allMessages.push(chatMessage);
     return chatMessage;
   }
@@ -23,23 +23,22 @@ export class ChatService implements IChatService {
   async addClient(chatClient: ChatClient): Promise<ChatClient> {
     // finds the chatclient id in the db and returns it + if nickname found in db throw exception
     const chatClientFindById = await this.clientRepository.findOne({id: chatClient.id});
-    if ( chatClientFindById){
+    if (chatClientFindById){
       return JSON.parse(JSON.stringify(chatClientFindById));
     }
     const chatClientFindByNickname = await this.clientRepository.findOne({nickname: chatClient.nickname});
     if (chatClientFindByNickname) {
       throw new Error('Error: Nickname already exists! Pick a new one ;)');
-    } //finally find client and return him
-    let client = this.clientRepository.create();
-    client.nickname = chatClient.nickname;
-    client = await this.clientRepository.save(client);
-    const newChatClient = JSON.parse(JSON.stringify(client));
-    this.clients.push(newChatClient);
-    return newChatClient;
-    // finding the one and only in db
-   /* const clientDb = await this.clientRepository.findOne({
-      nickname: nickname,
-    }); */
+    } else if(!(chatClientFindByNickname && chatClientFindById)){
+      //finally find client and return him
+      let client = this.clientRepository.create();
+      client.nickname = chatClient.nickname;
+      client = await this.clientRepository.save(client);
+      const newChatClient = JSON.parse(JSON.stringify(client));
+      this.clients.push(newChatClient);
+      return newChatClient;
+    //video71
+  }
   }
 
   async getAllClients(): Promise<ChatClient[]> {
@@ -48,14 +47,19 @@ export class ChatService implements IChatService {
     const chatClients: ChatClient[] = JSON.parse(JSON.stringify(clients));
     return chatClients;
   }
+/*
+  async getClient(id: string): Promise<ChatClient> {
+    const clientDb: Client = await this.clientRepository.findOne({ id: id });
+    return clientDb;
+  }
+*/
 
-  getAllMessages(): ChatMessage[] {
+  async getAllMessages(): Promise<ChatMessage[]> {
     return this.allMessages;
   }
 
   async deleteClient(id: string): Promise<void> {
     await this.clientRepository.delete({ id: id });
-    // this.clients = this.clients.filter((c) => c.id !== id);
   }
 
   updateTyping(typing: boolean, id: string): ChatClient {

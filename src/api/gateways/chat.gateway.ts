@@ -16,6 +16,7 @@ import {
 } from '../../core/primary-ports/chat.service.interface';
 import { JoinChatDto } from "../dtos/join-chat.dto";
 import { ChatClient } from "../../core/models/chat-client.model";
+import { MessageDto } from "../dtos/message.dto";
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -25,16 +26,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server;
 
   @SubscribeMessage('message')
-  handleChatEvent(
-    @MessageBody() message: string,
+  async handleChatEvent(
+    @MessageBody() message: MessageDto,
     @ConnectedSocket() client: Socket,
-  ): void {
-    const chatMessage = this.chatService.addMessage(message, client.id);
+  ): Promise<void> {
+    const chatMessage = await this.chatService.addMessage(
+      message.message,
+      message.senderId); //client: id;
     this.server.emit('newMessage', chatMessage);
   }
 
   @SubscribeMessage('typing')
-  handleTypingEvent(
+   handleTypingEvent(
     @MessageBody() typing: boolean,
     @ConnectedSocket() client: Socket,
   ): void {
@@ -55,13 +58,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const chatClients = await this.chatService.getAllClients();
       const welcome: WelcomeDto = {
         clients: chatClients,
-        messages: this.chatService.getAllMessages(),
+        messages: await this.chatService.getAllMessages(),
         client: chatClient,
       };
       client.emit('welcome', welcome);
       this.server.emit('clients', chatClients);
-    } catch (e) {
-      client.error(e.message);
+     } catch (e) {
+      client.error(e.message, 'error');
     }
   }
 
@@ -70,7 +73,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('clients', await this.chatService.getAllClients());
   }
 
-  async handleDisconnect(client: any): Promise<any> {
+  async handleDisconnect(client: Socket): Promise<any> {
     await this.chatService.deleteClient(client.id);
     this.server.emit('clients', await this.chatService.getAllClients());
   }
