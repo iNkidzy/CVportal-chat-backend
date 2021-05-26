@@ -5,9 +5,6 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "engines": {
-    "node": "14.16.1"
-  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -22,6 +19,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "engines": {
+    "node": "14.16.1"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
