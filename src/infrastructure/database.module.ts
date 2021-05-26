@@ -20,6 +20,12 @@ import { Client } from "./client.entity";
         entities: [Client],
         synchronize: true, // everytime we restart the system destroys data in db,
         // set false for production later...
+        ssl: true,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        },
       }),
     }),
   ],
